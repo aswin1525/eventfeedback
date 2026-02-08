@@ -1,0 +1,95 @@
+{
+  "id": "xploits-1091",
+  "metadata": {
+    "id": "xploits-1091",
+    "name": "xploits",
+    "createdAt": "2026-02-05T14:04:31.116Z",
+    "eventCount": 3
+  },
+  "globalSettings": {
+    "title": "xploits",
+    "description": "srmvec",
+    "logo": ""
+  },
+  "participantFields": {
+    "name": {
+      "enabled": true,
+      "required": true,
+      "label": "Full Name"
+    },
+    "department": {
+      "enabled": true,
+      "required": true,
+      "label": "Department"
+    },
+    "email": {
+      "enabled": true,
+      "required": false,
+      "label": "Email"
+    },
+    "phone": {
+      "enabled": true,
+      "required": false,
+      "label": "Phone"
+    }
+  },
+  "events": [
+    {
+      "id": "evt-1770300207960",
+      "title": "a",
+      "isActive": true,
+      "questions": [
+        {
+          "id": "q-1770300233854",
+          "label": "a",
+          "type": "reaction-slider",
+          "required": true
+        },
+        {
+          "id": "q-1770300242376",
+          "label": "aa",
+          "type": "text",
+          "required": true
+        },
+        {
+          "id": "q-1770300249905",
+          "label": "aaa",
+          "type": "rating",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "evt-1770300211549",
+      "title": "b",
+      "isActive": true,
+      "questions": [
+        {
+          "id": "q-1770300260167",
+          "label": "b",
+          "type": "reaction-slider",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "evt-1770300217260",
+      "title": "c",
+      "isActive": true,
+      "questions": [
+        {
+          "id": "q-1770300265053",
+          "label": "c",
+          "type": "reaction-slider",
+          "required": true
+        },
+        {
+          "id": "q-1770300268721",
+          "label": "cc",
+          "type": "reaction-slider",
+          "required": true
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,53 @@
+{
+  "id": "a-2077",
+  "metadata": {
+    "id": "a-2077",
+    "name": "a",
+    "createdAt": "2026-02-05T17:57:52.107Z",
+    "eventCount": 1,
+    "ownerId": "xploits"
+  },
+  "globalSettings": {
+    "title": "a",
+    "description": "We value your feedback!",
+    "logo": "https://www.vecteezy.com/free-photos/knight"
+  },
+  "participantFields": {
+    "name": {
+      "enabled": true,
+      "required": true,
+      "label": "Full Name"
+    },
+    "department": {
+      "enabled": true,
+      "required": true,
+      "label": "Department"
+    },
+    "email": {
+      "enabled": true,
+      "required": false,
+      "label": "Email"
+    },
+    "phone": {
+      "enabled": true,
+      "required": false,
+      "label": "Phone"
+    }
+  },
+  "events": [
+    {
+      "id": "evt-1770314262355",
+      "title": "aa",
+      "isActive": true,
+      "questions": [
+        {
+          "id": "q1",
+          "type": "reaction-slider",
+          "label": "How would you rate this session?",
+          "required": true
+        }
+      ]
+    }
+  ],
+  "ownerId": "xploits"
+}

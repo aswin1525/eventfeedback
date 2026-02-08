@@ -1,0 +1,78 @@
+{
+  "id": "vecoders-4821",
+  "metadata": {
+    "id": "vecoders-4821",
+    "name": "vecoders",
+    "createdAt": "2026-02-06T06:01:44.835Z",
+    "eventCount": 2,
+    "ownerId": "vecoders"
+  },
+  "globalSettings": {
+    "title": "vecoders",
+    "description": "We value your feedback!",
+    "logo": ""
+  },
+  "participantFields": {
+    "name": {
+      "enabled": true,
+      "required": true,
+      "label": "Full Name"
+    },
+    "department": {
+      "enabled": true,
+      "required": true,
+      "label": "Department"
+    },
+    "email": {
+      "enabled": true,
+      "required": false,
+      "label": "Email"
+    },
+    "phone": {
+      "enabled": true,
+      "required": false,
+      "label": "Phone"
+    }
+  },
+  "events": [
+    {
+      "id": "evt-1770357649225",
+      "title": "paper presentation",
+      "isActive": true,
+      "questions": [
+        {
+          "id": "q-1770357672176",
+          "label": "experience",
+          "type": "reaction-slider",
+          "required": true
+        },
+        {
+          "id": "q-1770357830403",
+          "type": "rating",
+          "label": "coo",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "evt-1770357655942",
+      "title": "ipl",
+      "isActive": true,
+      "questions": [
+        {
+          "id": "q-1770357694891",
+          "label": "exp",
+          "type": "reaction-slider",
+          "required": true
+        },
+        {
+          "id": "q-1770357703717",
+          "label": "sugg",
+          "type": "text",
+          "required": true
+        }
+      ]
+    }
+  ],
+  "ownerId": "vecoders"
+}

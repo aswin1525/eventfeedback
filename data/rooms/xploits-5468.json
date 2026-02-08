@@ -1,0 +1,71 @@
+{
+  "id": "xploits-5468",
+  "metadata": {
+    "id": "xploits-5468",
+    "name": "xploits",
+    "createdAt": "2026-02-06T04:59:37.684Z",
+    "eventCount": 2,
+    "ownerId": "xploits"
+  },
+  "globalSettings": {
+    "title": "xploits",
+    "description": "We value your feedback!",
+    "logo": ""
+  },
+  "participantFields": {
+    "name": {
+      "enabled": true,
+      "required": true,
+      "label": "Full Name"
+    },
+    "department": {
+      "enabled": true,
+      "required": true,
+      "label": "Department"
+    },
+    "email": {
+      "enabled": true,
+      "required": false,
+      "label": "Email"
+    },
+    "phone": {
+      "enabled": true,
+      "required": false,
+      "label": "Phone"
+    }
+  },
+  "events": [
+    {
+      "id": "evt-1770353939416",
+      "title": "ipl",
+      "isActive": true,
+      "questions": [
+        {
+          "id": "q-1770353961572",
+          "label": "xcvg",
+          "type": "reaction-slider",
+          "required": true
+        },
+        {
+          "id": "q-1770353956370",
+          "label": "fygjhcgf",
+          "type": "reaction-slider",
+          "required": true
+        },
+        {
+          "id": "q-1770353967311",
+          "label": "vdfsxgdxs",
+          "type": "rating",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "evt-1770353944662",
+      "title": "tr",
+      "isActive": true,
+      "questions": []
+    }
+  ],
+  "ownerId": "xploits"
+}

@@ -1,0 +1,44 @@
+{
+  "id": "xploits-9517",
+  "metadata": {
+    "id": "xploits-9517",
+    "name": "xploits",
+    "createdAt": "2026-02-05T17:55:39.539Z",
+    "eventCount": 1
+  },
+  "globalSettings": {
+    "title": "xploits",
+    "description": "We value your feedback!",
+    "logo": "https://www.vecteezy.com/free-photos/knight"
+  },
+  "participantFields": {
+    "name": {
+      "enabled": true,
+      "required": true,
+      "label": "Full Name"
+    },
+    "department": {
+      "enabled": true,
+      "required": true,
+      "label": "Department"
+    },
+    "email": {
+      "enabled": true,
+      "required": false,
+      "label": "Email"
+    },
+    "phone": {
+      "enabled": true,
+      "required": false,
+      "label": "Phone"
+    }
+  },
+  "events": [
+    {
+      "id": "evt-1770314121967",
+      "title": "a",
+      "isActive": true,
+      "questions": []
+    }
+  ]
+}

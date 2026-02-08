@@ -1,0 +1,22 @@
+[
+  {
+    "submittedAt": "2026-02-06T06:02:25.778Z",
+    "user": {
+      "name": "aa",
+      "department": "it",
+      "email": "",
+      "phone": ""
+    },
+    "feedbacks": {
+      "evt-1770357649225": {
+        "q-1770357672176": 5,
+        "q-1770357684880": 4
+      },
+      "evt-1770357655942": {
+        "q-1770357694891": 4,
+        "q-1770357703717": "uyv"
+      }
+    },
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
+  }
+]
