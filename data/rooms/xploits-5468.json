@@ -64,7 +64,33 @@
       "id": "evt-1770353944662",
       "title": "tr",
       "isActive": true,
-      "questions": []
+      "questions": [
+        {
+          "id": "q-1770577381201",
+          "type": "reaction-slider",
+          "label": "ff",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "hi-6902",
+      "title": "hi",
+      "isActive": true,
+      "questions": [
+        {
+          "id": "q1",
+          "type": "rating",
+          "label": "Overall Rating",
+          "required": true
+        },
+        {
+          "id": "q2",
+          "type": "text",
+          "label": "Comments",
+          "required": false
+        }
+      ]
     }
   ],
   "ownerId": "xploits"

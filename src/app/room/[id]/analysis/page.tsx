@@ -56,6 +56,15 @@ export default function RoomAnalysisPage({ params }: { params: Promise<{ id: str
     const [activeTab, setActiveTab] = useState("overview");
     const [selectedEventId, setSelectedEventId] = useState("");
 
+    // UI Interaction State (No Alerts)
+    const [newEventTitle, setNewEventTitle] = useState("");
+    const [editingEventId, setEditingEventId] = useState<string | null>(null);
+    const [editEventTitle, setEditEventTitle] = useState("");
+    const [deleteEventId, setDeleteEventId] = useState<string | null>(null);
+
+    const [newQuestionLabel, setNewQuestionLabel] = useState("");
+    const [deleteQuestionId, setDeleteQuestionId] = useState<string | null>(null);
+
     const fetchData = useCallback(async () => {
         if (!id) return;
         setLoading(true);
@@ -74,17 +83,12 @@ export default function RoomAnalysisPage({ params }: { params: Promise<{ id: str
             const statsData = await statsRes.json();
             setStats(statsData);
 
-            // Fetch Raw Feedback (reuse admin api for now, filter client side)
-            // Note: In production, we should have a dedicated room-scoped endpoint
-            const feedbackRes = await fetch("/api/admin/feedback");
+            // Fetch Raw Feedback (now using room-specific local API)
+            const feedbackRes = await fetch(`/api/rooms/${id}/feedback?t=${Date.now()}`);
             if (feedbackRes.ok) {
                 const feedbackData = await feedbackRes.json();
                 if (feedbackData.rows) {
-                    // Filter mainly by column 7 (RoomID) if available, or just take all for now if structure unknown
-                    // Based on admin page, it returns filtering logic there.
-                    // We assume row[7] is roomId based on earlier investigation
-                    const roomRows = feedbackData.rows.filter((r: any[]) => r[7] === id);
-                    setFeedbackRows(roomRows);
+                    setFeedbackRows(feedbackData.rows);
                 }
             }
 
@@ -370,79 +374,121 @@ export default function RoomAnalysisPage({ params }: { params: Promise<{ id: str
 
                 {/* EVENTS TAB */}
                 <TabsContent value="events" className="space-y-6">
-                    <div className="flex justify-between items-center">
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                         <div>
                             <h2 className="text-xl font-bold text-white">Event Management</h2>
                             <p className="text-white/60">Configure events for this room.</p>
                         </div>
-                        {/* We can reuse some state here or add new state for event adding */}
-                        {/* For simplicity in this large file, I'll add concise inline state logic effectively */}
-                        <Button onClick={() => {
-                            // This is a bit hacky to use prompt, but cleaner for a quick port.
-                            // Better to use the proper UI from admin page if possible.
-                            const title = prompt("Enter new event title:");
-                            if (title && title.trim()) {
-                                const newId = title.toLowerCase().replace(/[^a-z0-9]/g, "-") + "-" + Date.now().toString().slice(-4);
-                                const newEvent = {
-                                    id: newId,
-                                    title: title,
-                                    isActive: true,
-                                    questions: [
-                                        { id: "q1", type: "rating", label: "Overall Rating", required: true },
-                                        { id: "q2", type: "text", label: "Comments", required: false }
-                                    ]
-                                };
-                                const newConfig = { ...config, events: [...config.events, newEvent] };
-                                saveConfig(newConfig as RoomConfig);
-                            }
-                        }} variant="primary">
-                            <Plus className="w-4 h-4 mr-2" /> Add Event
+                    </div>
+
+                    {/* Add Event Section */}
+                    <div className="glass p-4 rounded-xl border border-white/5 flex gap-4 items-center">
+                        <Input
+                            placeholder="Enter new event title..."
+                            value={newEventTitle}
+                            onChange={(e) => setNewEventTitle(e.target.value)}
+                            className="bg-white/5 border-white/10"
+                        />
+                        <Button
+                            onClick={() => {
+                                if (newEventTitle.trim()) {
+                                    const newId = newEventTitle.toLowerCase().replace(/[^a-z0-9]/g, "-") + "-" + Date.now().toString().slice(-4);
+                                    const newEvent = {
+                                        id: newId,
+                                        title: newEventTitle,
+                                        isActive: true,
+                                        questions: [
+                                            { id: "q1", type: "rating", label: "Overall Rating", required: true },
+                                            { id: "q2", type: "text", label: "Comments", required: false }
+                                        ]
+                                    };
+                                    const newConfig = { ...config, events: [...config.events, newEvent] };
+                                    saveConfig(newConfig as RoomConfig);
+                                    setNewEventTitle("");
+                                }
+                            }}
+                            disabled={!newEventTitle.trim() || saving}
+                            variant="primary"
+                            className="bg-sympo-blue hover:bg-blue-600 text-white"
+                        >
+                            <Plus className="w-4 h-4 mr-2" /> Add
                         </Button>
                     </div>
 
                     <div className="grid grid-cols-1 gap-4">
                         {config.events.map((event, index) => (
                             <div key={event.id} className="glass p-4 rounded-xl flex flex-col md:flex-row items-center gap-4 justify-between border border-white/5">
-                                <div className="flex-1">
+                                <div className="flex-1 w-full">
                                     <div className="flex items-center gap-3">
-                                        <h3 className="text-lg font-semibold text-white">{event.title}</h3>
-                                        <Switch
-                                            checked={event.isActive}
-                                            onCheckedChange={(checked) => {
-                                                const newEvents = [...config.events];
-                                                newEvents[index] = { ...event, isActive: checked };
-                                                saveConfig({ ...config, events: newEvents });
-                                            }}
-                                        />
+                                        {editingEventId === event.id ? (
+                                            <div className="flex items-center gap-2 w-full max-w-sm">
+                                                <Input
+                                                    value={editEventTitle}
+                                                    onChange={(e) => setEditEventTitle(e.target.value)}
+                                                    className="h-8 bg-white/10 border-white/20"
+                                                />
+                                                <Button size="icon" variant="ghost" onClick={() => {
+                                                    if (editEventTitle && editEventTitle !== event.title) {
+                                                        const newEvents = [...config.events];
+                                                        newEvents[index] = { ...event, title: editEventTitle };
+                                                        saveConfig({ ...config, events: newEvents });
+                                                    }
+                                                    setEditingEventId(null);
+                                                }}>
+                                                    <Check className="w-4 h-4 text-green-400" />
+                                                </Button>
+                                                <Button size="icon" variant="ghost" onClick={() => setEditingEventId(null)}>
+                                                    <X className="w-4 h-4 text-red-400" />
+                                                </Button>
+                                            </div>
+                                        ) : (
+                                            <h3 className="text-lg font-semibold text-white">{event.title}</h3>
+                                        )}
+
+                                        {!editingEventId && (
+                                            <Switch
+                                                checked={event.isActive}
+                                                onCheckedChange={(checked) => {
+                                                    const newEvents = [...config.events];
+                                                    newEvents[index] = { ...event, isActive: checked };
+                                                    saveConfig({ ...config, events: newEvents });
+                                                }}
+                                            />
+                                        )}
                                     </div>
                                     <p className="text-sm text-white/40">ID: {event.id} • {event.questions.length} Questions</p>
                                 </div>
                                 <div className="flex gap-2">
                                     <Button size="sm" variant="ghost" onClick={() => {
-                                        const newTitle = prompt("Edit event title:", event.title);
-                                        if (newTitle && newTitle !== event.title) {
-                                            const newEvents = [...config.events];
-                                            newEvents[index] = { ...event, title: newTitle };
-                                            saveConfig({ ...config, events: newEvents });
-                                        }
+                                        setEditingEventId(event.id);
+                                        setEditEventTitle(event.title);
                                     }}>
                                         <Pencil className="w-4 h-4" />
                                     </Button>
-                                    <Button size="sm" variant="ghost" className="text-red-400 hover:bg-red-500/10" onClick={() => {
-                                        if (confirm("Delete this event?")) {
+
+                                    {deleteEventId === event.id ? (
+                                        <Button size="sm" variant="outline" className="border-red-500 text-red-500 hover:bg-red-500/10" onClick={() => {
                                             const newEvents = config.events.filter(e => e.id !== event.id);
                                             saveConfig({ ...config, events: newEvents });
-                                        }
-                                    }}>
-                                        <Trash2 className="w-4 h-4" />
-                                    </Button>
+                                            setDeleteEventId(null);
+                                        }}>
+                                            Confirm?
+                                        </Button>
+                                    ) : (
+                                        <Button size="sm" variant="ghost" className="text-red-400 hover:bg-red-500/10" onClick={() => {
+                                            setDeleteEventId(event.id);
+                                            // Auto-cancel delete confirmation after 3s
+                                            setTimeout(() => setDeleteEventId(null), 3000);
+                                        }}>
+                                            <Trash2 className="w-4 h-4" />
+                                        </Button>
+                                    )}
+
                                     <Button size="sm" variant="outline" onClick={() => {
-                                        // A simple way to jump to questions tab with this event selected
-                                        // We need a state for selectedEventId in the parent
-                                        // For now, let's just alert
-                                        alert("Go to Questions tab to edit questions for this event.");
+                                        setSelectedEventId(event.id);
+                                        setActiveTab("questions");
                                     }}>
-                                        Manage Questions
+                                        Questions
                                     </Button>
                                 </div>
                             </div>
@@ -490,18 +536,26 @@ export default function RoomAnalysisPage({ params }: { params: Promise<{ id: str
                                             </div>
                                             <div className="text-xs text-white/40 uppercase">{q.type}</div>
                                         </div>
-                                        <Button size="icon" variant="ghost" className="text-red-400 hover:bg-red-500/10" onClick={() => {
-                                            if (confirm("Delete this question?")) {
+                                        {deleteQuestionId === q.id ? (
+                                            <Button size="sm" variant="outline" className="border-red-500 text-red-500 hover:bg-red-500/10" onClick={() => {
                                                 const newConfig = { ...config };
                                                 const evtIndex = newConfig.events.findIndex(e => e.id === selectedEventId);
                                                 if (evtIndex >= 0) {
                                                     newConfig.events[evtIndex].questions = newConfig.events[evtIndex].questions.filter(qu => qu.id !== q.id);
                                                     saveConfig(newConfig as RoomConfig);
                                                 }
-                                            }
-                                        }}>
-                                            <Trash2 className="w-4 h-4" />
-                                        </Button>
+                                                setDeleteQuestionId(null);
+                                            }}>
+                                                Confirm
+                                            </Button>
+                                        ) : (
+                                            <Button size="icon" variant="ghost" className="text-red-400 hover:bg-red-500/10" onClick={() => {
+                                                setDeleteQuestionId(q.id);
+                                                setTimeout(() => setDeleteQuestionId(null), 3000);
+                                            }}>
+                                                <Trash2 className="w-4 h-4" />
+                                            </Button>
+                                        )}
                                     </div>
                                 ))}
                             </div>
@@ -510,42 +564,47 @@ export default function RoomAnalysisPage({ params }: { params: Promise<{ id: str
                             <div className="glass p-6 rounded-xl h-fit space-y-4 border border-white/5">
                                 <h3 className="text-lg font-bold text-white">Add Question</h3>
                                 <div className="space-y-4">
-                                    <Button variant="outline" className="w-full justify-start text-left" onClick={() => {
-                                        const label = prompt("Enter question label (e.g. 'How was the speaker?'):");
-                                        if (label) {
-                                            const newQ = { id: `q-${Date.now()}`, type: 'rating' as const, label, required: true };
+                                    <div className="space-y-2">
+                                        <Label>Question Label</Label>
+                                        <Input
+                                            placeholder="e.g. How was the content?"
+                                            value={newQuestionLabel}
+                                            onChange={(e) => setNewQuestionLabel(e.target.value)}
+                                            className="bg-white/5 border-white/10"
+                                        />
+                                    </div>
+                                    <div className="grid grid-cols-1 gap-2">
+                                        <Button variant="outline" className="w-full justify-start text-left" disabled={!newQuestionLabel} onClick={() => {
+                                            const newQ = { id: `q-${Date.now()}`, type: 'rating' as const, label: newQuestionLabel, required: true };
                                             const newConfig = { ...config };
                                             const evtIndex = newConfig.events.findIndex(e => e.id === selectedEventId);
                                             newConfig.events[evtIndex].questions.push(newQ);
                                             saveConfig(newConfig as RoomConfig);
-                                        }
-                                    }}>
-                                        <Star className="w-4 h-4 mr-2" /> Add Rating
-                                    </Button>
-                                    <Button variant="outline" className="w-full justify-start text-left" onClick={() => {
-                                        const label = prompt("Enter text question (e.g. 'Comments?'):");
-                                        if (label) {
-                                            const newQ = { id: `q-${Date.now()}`, type: 'text' as const, label, required: false };
+                                            setNewQuestionLabel("");
+                                        }}>
+                                            <Star className="w-4 h-4 mr-2" /> Add Rating
+                                        </Button>
+                                        <Button variant="outline" className="w-full justify-start text-left" disabled={!newQuestionLabel} onClick={() => {
+                                            const newQ = { id: `q-${Date.now()}`, type: 'text' as const, label: newQuestionLabel, required: false };
                                             const newConfig = { ...config };
                                             const evtIndex = newConfig.events.findIndex(e => e.id === selectedEventId);
                                             newConfig.events[evtIndex].questions.push(newQ);
                                             saveConfig(newConfig as RoomConfig);
-                                        }
-                                    }}>
-                                        <Type className="w-4 h-4 mr-2" /> Add Text
-                                    </Button>
-                                    <Button variant="outline" className="w-full justify-start text-left" onClick={() => {
-                                        const label = prompt("Enter reaction question (e.g. 'How did you feel?'):");
-                                        if (label) {
-                                            const newQ = { id: `q-${Date.now()}`, type: 'reaction-slider' as const, label, required: true };
+                                            setNewQuestionLabel("");
+                                        }}>
+                                            <Type className="w-4 h-4 mr-2" /> Add Text
+                                        </Button>
+                                        <Button variant="outline" className="w-full justify-start text-left" disabled={!newQuestionLabel} onClick={() => {
+                                            const newQ = { id: `q-${Date.now()}`, type: 'reaction-slider' as const, label: newQuestionLabel, required: true };
                                             const newConfig = { ...config };
                                             const evtIndex = newConfig.events.findIndex(e => e.id === selectedEventId);
                                             newConfig.events[evtIndex].questions.push(newQ);
                                             saveConfig(newConfig as RoomConfig);
-                                        }
-                                    }}>
-                                        <Smile className="w-4 h-4 mr-2" /> Add Reaction Slider
-                                    </Button>
+                                            setNewQuestionLabel("");
+                                        }}>
+                                            <Smile className="w-4 h-4 mr-2" /> Add Reaction Slider
+                                        </Button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -579,7 +638,7 @@ export default function RoomAnalysisPage({ params }: { params: Promise<{ id: str
                         </div>
                         <div className="space-y-2 pt-4">
                             <Label>Danger Zone</Label>
-                            <Button variant="destructive" onClick={() => alert("Deleting rooms is not yet supported in this view.")}>
+                            <Button variant="outline" className="border-red-500 text-red-500 opacity-50 cursor-not-allowed" disabled title="Coming soon">
                                 Delete Room
                             </Button>
                         </div>
