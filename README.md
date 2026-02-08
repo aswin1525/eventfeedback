@@ -1,3 +1,8 @@
+# Symposium Feedback App
+
+> [!WARNING]
+> **Under Development**: This project is currently under active development. Features and APIs are subject to change.
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
