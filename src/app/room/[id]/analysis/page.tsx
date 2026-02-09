@@ -6,7 +6,7 @@ import { RoomConfig } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ExternalLink, Copy, LayoutDashboard, Loader2, RefreshCcw, Search, Download, Plus, Pencil, Trash2, Check, X, Star, Type, List, Smile, Settings, Calendar, BarChart3, HelpCircle } from "lucide-react";
+import { ExternalLink, Copy, LayoutDashboard, Loader2, RefreshCcw, Search, Download, Plus, Pencil, Trash2, Check, X, Star, Type, List, Smile, Settings, Calendar, BarChart3, HelpCircle, Home } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -189,6 +189,10 @@ export default function RoomAnalysisPage({ params }: { params: Promise<{ id: str
                 <div className="flex flex-wrap gap-2">
                     <Button variant="ghost" onClick={fetchData} disabled={loading}>
                         <RefreshCcw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                    </Button>
+                    <Button variant="outline" onClick={() => router.push('/')}>
+                        <Home className="w-4 h-4 mr-2" />
+                        Home
                     </Button>
                     <Button variant="secondary" onClick={copyLink}>
                         <Copy className="w-4 h-4 mr-2" />

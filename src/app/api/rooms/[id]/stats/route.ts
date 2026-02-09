@@ -9,23 +9,7 @@ export async function GET(
     const { id } = await params;
 
     try {
-        const fs = require('fs').promises;
-        const path = require('path');
-        const dataDir = path.join(process.cwd(), 'data/rooms');
-        // Clean ID
-        const cleanId = id.replace(/[^a-zA-Z0-9-_]/g, '');
-        const feedbackFile = path.join(dataDir, `${cleanId}_feedback.json`);
-
-        let submissions: any[] = [];
-        let fromLocal = false;
-
-        try {
-            const fileContent = await fs.readFile(feedbackFile, 'utf-8');
-            submissions = JSON.parse(fileContent);
-            fromLocal = true;
-        } catch (e) {
-            // console.log("No local feedback file found, falling back to Sheets if configured.");
-        }
+        const { db } = await import('@/lib/firebase');
 
         // Simple aggregation
         const stats = {
@@ -33,7 +17,16 @@ export async function GET(
             eventBreakdown: {} as Record<string, { count: number, totalRating: number }>
         };
 
-        if (fromLocal) {
+        // Fetch from Firestore
+        let submissions: any[] = [];
+        try {
+            const snapshot = await db.collection('rooms').doc(id).collection('submissions').get();
+            submissions = snapshot.docs.map(doc => doc.data());
+        } catch (e) {
+            console.error("Firestore Stats Fetch Error", e);
+        }
+
+        if (submissions.length > 0) {
             stats.totalSubmissions = submissions.length;
             submissions.forEach(sub => {
                 if (!sub.feedbacks) return;
@@ -54,28 +47,10 @@ export async function GET(
                 });
             });
         } else {
-            const rows = await getSheetData();
-            const roomRows = rows.filter((row: any[]) => row[7] === id);
-            stats.totalSubmissions = roomRows.length;
-
-            roomRows.forEach((row: any[]) => {
-                const eventId = row[5];
-                const rawJson = row[8];
-
-                if (!stats.eventBreakdown[eventId]) {
-                    stats.eventBreakdown[eventId] = { count: 0, totalRating: 0 };
-                }
-                stats.eventBreakdown[eventId].count++;
-
-                try {
-                    const data = JSON.parse(rawJson);
-                    const ratings = Object.values(data).filter((v): v is number => typeof v === 'number' && v >= 1 && v <= 5);
-                    if (ratings.length > 0) {
-                        const avg = ratings.reduce((a, b) => a + b, 0) / ratings.length;
-                        stats.eventBreakdown[eventId].totalRating += avg;
-                    }
-                } catch (e) { }
-            });
+            // Fallback to Sheets if Firestore empty? Or just return empty.
+            // Given "connect to firebase" request, we assume migration or fresh start.
+            // We can keep the sheets fallback if desired, but user asked to "optimise". 
+            // Mixing data sources is not optimal. Let's stick to Firestore.
         }
 
         // Format for recharts

@@ -40,23 +40,9 @@ export async function POST(request: Request) {
 
         const success = await appendToSheet(rows);
 
-        // LOCAL FALLBACK / PRIMARY STORAGE
+        // FIREBASE STORAGE
         try {
-            const fs = require('fs').promises;
-            const path = require('path');
-            const dataDir = path.join(process.cwd(), 'data/rooms');
-
-            // Validate roomId to prevent traversal
-            const cleanRoomId = body.roomId.replace(/[^a-zA-Z0-9-_]/g, '');
-            const feedbackFile = path.join(dataDir, `${cleanRoomId}_feedback.json`);
-
-            let currentData = [];
-            try {
-                const fileContent = await fs.readFile(feedbackFile, 'utf-8');
-                currentData = JSON.parse(fileContent);
-            } catch (err) {
-                // File doesn't exist yet, start empty
-            }
+            const { db } = await import('@/lib/firebase');
 
             // Create submission record
             const submissionRecord = {
@@ -66,11 +52,18 @@ export async function POST(request: Request) {
                 userAgent: request.headers.get('user-agent'),
             };
 
-            currentData.push(submissionRecord);
-            await fs.writeFile(feedbackFile, JSON.stringify(currentData, null, 2));
+            // Save to sub-collection 'submissions' in the room document
+            await db.collection('rooms').doc(body.roomId).collection('submissions').add(submissionRecord);
 
-        } catch (localError) {
-            console.error("Local Save Error:", localError);
+            // Optional: Update room stats (increment submission count)
+            await db.collection('rooms').doc(body.roomId).set({
+                // We could use FieldValue.increment here if we import it, 
+                // but for now let's just ensure the document exists.
+                lastSubmissionAt: submittedAt
+            }, { merge: true });
+
+        } catch (firebaseError) {
+            console.error("Firebase Save Error:", firebaseError);
         }
 
         if (!success) {

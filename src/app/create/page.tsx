@@ -10,7 +10,7 @@ import { ArrowRight, ChevronLeft, Loader2, Plus, Trash2, Save, Link2 } from "luc
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { createDefaultRoom } from "@/lib/store"; // We can't import server code here. Copying utility logic/types locally or assuming structure.
+import { createDefaultRoom } from "@/lib/utils";
 
 // Helper to create empty structure
 const initialConfig = (name: string): RoomConfig => ({

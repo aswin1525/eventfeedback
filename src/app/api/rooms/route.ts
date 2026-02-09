@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { listRooms, saveRoom, createDefaultRoom } from '@/lib/store';
+import { listRooms, saveRoom } from '@/lib/store';
+import { createDefaultRoom } from '@/lib/utils';
 import { cookies } from 'next/headers';
 
 export async function GET() {

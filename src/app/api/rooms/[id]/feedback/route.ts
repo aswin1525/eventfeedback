@@ -9,18 +9,14 @@ export async function GET(
     const { id } = await params;
 
     try {
-        const fs = require('fs').promises;
-        const path = require('path');
-        const dataDir = path.join(process.cwd(), 'data/rooms');
-        const cleanId = id.replace(/[^a-zA-Z0-9-_]/g, '');
-        const feedbackFile = path.join(dataDir, `${cleanId}_feedback.json`);
+        const { db } = await import('@/lib/firebase');
 
         let submissions: any[] = [];
         try {
-            const fileContent = await fs.readFile(feedbackFile, 'utf-8');
-            submissions = JSON.parse(fileContent);
+            const snapshot = await db.collection('rooms').doc(id).collection('submissions').orderBy('submittedAt', 'desc').get();
+            submissions = snapshot.docs.map(doc => doc.data());
         } catch (e) {
-            // File not found or empty
+            console.error("Firestore Fetch Error", e);
             return NextResponse.json({ rows: [] });
         }
 
@@ -51,8 +47,9 @@ export async function GET(
             });
         });
 
-        // Sort by timestamp descending
-        rows.sort((a, b) => new Date(b[0]).getTime() - new Date(a[0]).getTime());
+        // Sort by timestamp descending (already sorted by Firestore, but keeping for safety if multi-event rows are mixed)
+        // actually Firestore sort is per document, here we flatten, so date order might be slightly off if multiple events per sub? 
+        // No, all events in one sub have same timestamp. So order is preserved.
 
         return NextResponse.json({ rows });
 
