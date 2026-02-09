@@ -30,6 +30,19 @@ export async function saveRoom(config: RoomConfig): Promise<boolean> {
     }
 }
 
+export async function deleteRoom(roomId: string): Promise<boolean> {
+    try {
+        await db.collection(ROOMS_COLLECTION).doc(roomId).delete();
+        // Optionally delete subcollections if needed (Firestore doesn't auto-delete subcollections)
+        // For now, we leave them as orphaned data or handle via recursive delete if strictly required.
+        // Given complexity of recursive delete in client/admin SDK without cloud functions, we just delete the parent.
+        return true;
+    } catch (error) {
+        console.error(`[Store] Failed to delete room ${roomId}:`, error);
+        return false;
+    }
+}
+
 export async function listRooms(ownerId?: string): Promise<RoomMetadata[]> {
     try {
         let query: FirebaseFirestore.Query = db.collection(ROOMS_COLLECTION);

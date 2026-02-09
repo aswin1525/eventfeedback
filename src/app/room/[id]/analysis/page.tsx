@@ -642,15 +642,81 @@ export default function RoomAnalysisPage({ params }: { params: Promise<{ id: str
                         </div>
                         <div className="space-y-2 pt-4">
                             <Label>Danger Zone</Label>
-                            <Button variant="outline" className="border-red-500 text-red-500 opacity-50 cursor-not-allowed" disabled title="Coming soon">
-                                Delete Room
-                            </Button>
+                            <div className="flex flex-col gap-2">
+                                <p className="text-sm text-white/40">Deleting the room will permanently remove it from your dashboard.</p>
+                                <Button
+                                    variant="outline"
+                                    className="w-fit border-red-500 text-red-500 hover:bg-red-500/10"
+                                    onClick={() => setDeleteEventId("ROOM_DELETE_CONFIRM")}
+                                >
+                                    Delete Room
+                                </Button>
+                            </div>
                         </div>
                     </div>
                 </TabsContent>
 
             </Tabs>
 
+            {/* DELETE ROOM CONFIRMATION MODAL */}
+            {deleteEventId === "ROOM_DELETE_CONFIRM" && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="glass p-6 rounded-xl border border-red-500/30 w-full max-w-md space-y-4 m-4 relative animate-in zoom-in-95 duration-200">
+                        <Button
+                            size="icon"
+                            variant="ghost"
+                            className="absolute top-2 right-2 text-white/40 hover:text-white"
+                            onClick={() => setDeleteEventId(null)}
+                        >
+                            <X className="w-4 h-4" />
+                        </Button>
+
+                        <div className="space-y-2">
+                            <h3 className="text-xl font-bold text-red-500">Delete Room?</h3>
+                            <p className="text-white/60 text-sm">
+                                This action cannot be undone. All collected feedback, stats, and event configurations will be permanently lost.
+                            </p>
+                        </div>
+
+                        <div className="p-3 bg-red-500/10 rounded-lg border border-red-500/20 text-red-200 text-sm">
+                            <p>To confirm, please type <strong>delete</strong> below:</p>
+                        </div>
+
+                        <Input
+                            placeholder="Type 'delete' to confirm"
+                            className="bg-black/40 border-red-500/30 focus-visible:ring-red-500/50"
+                            onChange={(e) => {
+                                const btn = document.getElementById('confirm-delete-btn') as HTMLButtonElement;
+                                if (btn) btn.disabled = e.target.value !== 'delete';
+                            }}
+                        />
+
+                        <div className="flex gap-3 justify-end pt-2">
+                            <Button variant="ghost" onClick={() => setDeleteEventId(null)}>Cancel</Button>
+                            <Button
+                                id="confirm-delete-btn"
+                                variant="destructive"
+                                className="bg-red-600 hover:bg-red-700 text-white"
+                                disabled
+                                onClick={async () => {
+                                    try {
+                                        const res = await fetch(`/api/rooms/${id}`, { method: "DELETE" });
+                                        if (res.ok) {
+                                            router.push('/');
+                                        } else {
+                                            alert("Failed to delete room.");
+                                        }
+                                    } catch (e) {
+                                        alert("Error deleting room.");
+                                    }
+                                }}
+                            >
+                                Confirm Delete
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
